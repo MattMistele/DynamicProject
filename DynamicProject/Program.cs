@@ -53,14 +53,13 @@ namespace DynamicProject
             }
 
             string strBuilder = "";
-            int lookingAtIndex = 0;
-
-            for(int i = lookingAtIndex; i < Math.Min(MAX_WORD_SIZE, sentence.Length); i++)
+ 
+            for(int i = 0; i < Math.Min(MAX_WORD_SIZE, sentence.Length); i++)
             {
                 strBuilder += sentence[i];
                 Console.Write(" Checking " + strBuilder + " in '" + sentence + "'");
 
-                // Check if this current word is valid. If so, add it to the result dictionary
+                // Check if the current word is valid. If so, add it to the result dictionary
                 if(dictionary.ContainsKey(strBuilder))
                 {
                     Console.Write("....... Match!");

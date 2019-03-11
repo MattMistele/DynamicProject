@@ -38,6 +38,8 @@ namespace DynamicProject
             // Edge case - 1 letter words
             words.Add("I", 1);
             words.Add("A", 1);
+            // TODO: change - only do upper/lower case?
+            words.Add("i", 1);
             words.Add("a", 1);
 
             Console.WriteLine("Done.");
