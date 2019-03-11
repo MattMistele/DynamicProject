@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace DynamicProject
 {
@@ -6,7 +9,12 @@ namespace DynamicProject
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Dictionary<string, int> words = DictionaryParser.parseDictionary1("dictionary.txt");
+
+
+            // keep the console open at the end so it doesn't immediatly close
+            Console.ReadLine();
+            
         }
     }
 }
