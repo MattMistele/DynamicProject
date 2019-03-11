@@ -21,7 +21,7 @@ namespace DynamicProject
             // start parsing at the third line, bc the first two lines are just comments
             for(int i = 2; i < lines.Length; i++)
             {
-                string currentLine = lines[i];
+                string currentLine = lines[i].ToLower();
 
                 if (currentLine.StartsWith("#!comment:"))
                     currentScore += 100;
