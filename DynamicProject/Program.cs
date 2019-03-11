@@ -23,11 +23,11 @@ namespace DynamicProject
             Console.Write("Enter your input: ");
             input = Console.ReadLine().ToLower();
 
-            List<string> all = computeSentence(input);
+            SortedDictionary<int, string> all = computeSentence(input);
 
             foreach(var str in all)
             {
-                Console.WriteLine(str);
+                Console.WriteLine(str.Key + " " + str.Value);
             }
 
             // keep the console open at the end so it doesn't immediatly close
@@ -39,13 +39,19 @@ namespace DynamicProject
 
         //}
 
-        static List<string> computeSentence(string sentence)
+        // Returns a SortedDictionary (C#'s generic version of a binary search tree)
+        // ordered by <key = score, value = sentence>
+        static SortedDictionary<int, string> computeSentence(string sentence)
         {
-            // Base case - sentence length is 0
-            if (sentence.Length == 0)
-                return new List<string>() { " " };
+            SortedDictionary<int, string> result = new SortedDictionary<int, string>();
 
-            List<string> result = new List<string>();
+            // Base case - sentence length is 0. Return a space.
+            if (sentence.Length == 0)
+            {
+                result.Add(0, " ");
+                return result;
+            }
+
             string strBuilder = "";
             int lookingAtIndex = 0;
 
@@ -59,10 +65,10 @@ namespace DynamicProject
                 {
                     Console.Write("....... Match!");
                     string next = sentence.Substring(strBuilder.Length);
-                    List<string> nextPossibilities = computeSentence(next);
+                    SortedDictionary<int, string> nextPossibilities = computeSentence(next);
 
-                    foreach (string possibility in nextPossibilities)
-                        result.Add(strBuilder + " " + possibility);
+                    foreach (var possibility in nextPossibilities)
+                        result.Add(possibility.Key + dictionary[strBuilder], strBuilder + " " + possibility.Value);
                 }
                 Console.WriteLine();
             }
