@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace DynamicProject
@@ -39,6 +40,9 @@ namespace DynamicProject
 
         //}
 
+        // 1st attempt at dynamic part. Storing each sentence so we already know its possibilities
+        static Dictionary<string, SortedDictionary<int, string>> savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
+
         // Returns a SortedDictionary (C#'s generic version of a binary search tree)
         // ordered by <key = score, value = sentence>
         static SortedDictionary<int, string> computeSentence(string sentence)
@@ -64,9 +68,13 @@ namespace DynamicProject
                 {
                     Console.Write("....... Match!");
                     string next = sentence.Substring(strBuilder.Length);
-                    SortedDictionary<int, string> nextPossibilities = computeSentence(next);
 
-                    foreach (var possibility in nextPossibilities)
+                    if (!savedSentences.ContainsKey(next))
+                        savedSentences[next] = computeSentence(next);
+                    else
+                        Console.WriteLine(" Already calculated term '" + next + "'. Skipping.");
+
+                    foreach (var possibility in savedSentences[next])
                         result.Add(possibility.Key + dictionary[strBuilder], strBuilder + " " + possibility.Value);
                 }
                 Console.WriteLine();
