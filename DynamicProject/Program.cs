@@ -11,6 +11,9 @@ namespace DynamicProject
         const int MAX_WORD_SIZE = 16;
         static Dictionary<string, int> dictionary;
 
+        // 1st attempt at dynamic part. Storing each sentence so we already know its possibilities
+        static Dictionary<string, SortedDictionary<int, string>> savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
+
         static void Main(string[] args)
         {
             dictionary = DictionaryParser.parseDictionary1("dictionary.txt");
@@ -35,13 +38,29 @@ namespace DynamicProject
             Console.ReadLine();
         }
 
-        //static string[] addWhiteSpace(string input)
-        //{
+        static SortedDictionary<int, string> addWhiteSpace(string input)
+        {
+            string current = "";
+            SortedDictionary<int, string> result = new SortedDictionary<int, string>();
 
-        //}
+            for(int i = 0; i < input.Length; i++)
+            {
+                // If we find sentance splitting punctuation, compute current.
+                if (isPunctuation(input[i]))
+                {
+                    SortedDictionary<int, string> currentSentence = computeSentence(current);
 
-        // 1st attempt at dynamic part. Storing each sentence so we already know its possibilities
-        static Dictionary<string, SortedDictionary<int, string>> savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
+                    // Because we want to come up with each possible essay, add
+                    // each possibility for this sentance to every other possiblility we already have in the result
+                    foreach(var essay in result)
+                    {
+
+                    }
+                }
+            }
+
+            return result;
+        }
 
         // Returns a SortedDictionary (C#'s generic version of a binary search tree)
         // ordered by <key = score, value = sentence>
@@ -81,6 +100,12 @@ namespace DynamicProject
             }
 
             return result;
+        }
+
+
+        static bool isPunctuation(char c)
+        {
+            return c.Equals('!') || c.Equals('?') || c.Equals('.') || c.Equals(':') || c.Equals(';') || c.Equals(',');
         }
     }
 }
