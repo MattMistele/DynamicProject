@@ -11,9 +11,6 @@ namespace DynamicProject
         const int MAX_WORD_SIZE = 16;
         static Dictionary<string, int> dictionary;
 
-        // 1st attempt at dynamic part. Storing each sentence so we already know its possibilities
-        static Dictionary<string, SortedDictionary<int, string>> savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
-
         static void Main(string[] args)
         {
             dictionary = DictionaryParser.parseDictionary1("dictionary.txt");
@@ -38,6 +35,11 @@ namespace DynamicProject
             Console.ReadLine();
         }
 
+        // Input: Text without whitespace, may contain splitting puncutation (.?!:;,)
+        // Output: 1. Top 5 most likely documents with their score
+        //         2. A list (of each sentence) of lists (all valid possibilities for that sentence) 
+        // ** Note: I am changing the spec from "all possible original documents" to this output, 
+        //          because the output got super big with larger documents
         static SortedDictionary<int, string> addWhiteSpace(string input)
         {
             string current = "";
@@ -45,7 +47,7 @@ namespace DynamicProject
 
             for(int i = 0; i < input.Length; i++)
             {
-                // If we find sentance splitting punctuation, compute current.
+                // If we find punctuation that splits words, compute it as a sentence.
                 if (isPunctuation(input[i]))
                 {
                     SortedDictionary<int, string> currentSentence = computeSentence(current);
@@ -62,10 +64,19 @@ namespace DynamicProject
             return result;
         }
 
-        // Returns a SortedDictionary (C#'s generic version of a binary search tree)
-        // ordered by <key = score, value = sentence>
+
+        // Input: sentence string without puncutuation or whitespace
+        // Output: A binary search tree with all valid sentences with whitespace, 
+        //         ordered by their score (smaller score = more likelyhood of being the actual sentence)
+        //
+        // ** This is a memory function of dynamic programming **
+        //    It uses a global variable (a hashmap) _savedSentences to store the lists of valid
+        //    sentences we've already calculated <key = sentence, value = list of valid sentences>
+        static Dictionary<string, SortedDictionary<int, string>> _savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
+
         static SortedDictionary<int, string> computeSentence(string sentence)
         {
+            // BST of all valid sentences for a given sentence, ordered by score
             SortedDictionary<int, string> result = new SortedDictionary<int, string>();
 
             // Base case - sentence length is 0. Return a space.
@@ -86,14 +97,19 @@ namespace DynamicProject
                 if(dictionary.ContainsKey(strBuilder))
                 {
                     Console.Write("....... Match!");
+
                     string next = sentence.Substring(strBuilder.Length);
 
-                    if (!savedSentences.ContainsKey(next))
-                        savedSentences[next] = computeSentence(next);
+                    // Now, take the rest of the string, and see if we've already caluclated it before.
+                    // DYNAMIC PART - if we have, take the results from the hashmap _saveSentences
+                    // If we haven't, run it as it's own sentence recursivly through this function
+                    if (!_savedSentences.ContainsKey(next))
+                        _savedSentences[next] = computeSentence(next);
                     else
                         Console.WriteLine(" Already calculated term '" + next + "'. Skipping.");
 
-                    foreach (var possibility in savedSentences[next])
+                    // Add all valid results to the list
+                    foreach (var possibility in _savedSentences[next])
                         result.Add(possibility.Key + dictionary[strBuilder], strBuilder + " " + possibility.Value);
                 }
                 Console.WriteLine();
