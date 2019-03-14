@@ -34,15 +34,15 @@ namespace DynamicProject
             Console.Write("Enter your input: ");
             input = Console.ReadLine().ToLower();
 
-            List<SortedDictionary<int, string>> all = computeDocument(input);
+            List<List<WeightedString>> allSentences = computeDocument(input);
 
-            for(int i = 0; i < all.Count; i++)
+            for(int i = 0; i < allSentences.Count; i++)
             {
                 Console.WriteLine("All possibilities for sentence " + i + ": ");
 
-                foreach(var sentence in all[i])
+                foreach(WeightedString sentence in allSentences[i])
                 {
-                    Console.WriteLine("     Score:" + sentence.Key + " Sentence: " + sentence.Value);
+                    Console.WriteLine("     Score:" + sentence.score + " Sentence: " + sentence.value);
                 }
                 Console.WriteLine();
             }
@@ -51,17 +51,21 @@ namespace DynamicProject
             Console.ReadLine();
         }
 
-        // Input: Text without whitespace, may contain sentence splitting puncutation (.?!:;,)
-        // Output: 1. Top 5 most likely documents with their score in a BST
-        //         2. A list (of each sentence) of sorted lists (all valid possibilities for that sentence) 
+        // Input: list (of each sentence in the document) of sorted lists (all valid possibilities for each sentence)
+        // Output: The top 5 most likely origional documents
         //
         // **Note: I am changing the spec from "all possible original documents" to this output, 
         //         because the output got super big with larger documents
-        static List<SortedDictionary<int, string>> computeDocument(string input)
+        static List<string> aggregateTopDocuments(List<List<WeightedString>> allSentences)
         {
-            SortedSet<WeightedString> mostLikelyDocuments = new SortedSet<WeightedString>();
-            List<List<WeightedString>> allPossibleSentences = new List<List<WeightedString>>();
 
+        }
+
+        // Input: Text without whitespace, may contain sentence splitting puncutation (.?!:;,)
+        // Output: A list (of each sentence in the document) of sorted lists (all valid possibilities for each sentence) 
+        static List<List<WeightedString>> computeDocument(string input)
+        {
+            List<List<WeightedString>> allPossibleSentences = new List<List<WeightedString>>();
             string current = "";
 
             for (int i = 0; i < input.Length; i++)
@@ -69,39 +73,42 @@ namespace DynamicProject
                 // If we find punctuation that splits words, compute it as a sentence.
                 if (isPunctuation(input[i]))
                 {
-                    // Reset the memory from the dynamic programming function, compute the sentence
-                    _savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
-                    SortedDictionary<int, string> currentSentence = computeSentence(current, input[i]);
-                    allPossibleSentences.Add(currentSentence);
-
-                    // Because we want to come up with each possible essay, add
-                    // each possibility for this sentance to every other possiblility we already have in the result
-                    foreach (var document in mostLikelyDocuments)
-                    {
-                        //  document.
-                    }
-
+                    allPossibleSentences.Add(computeSentence(current, input[i]));
                     current = "";
                 }
                 else
-                {
                     current += input[i];
-                }
             }
+
+            // If the document doesn't end with punctuation, we'll still have stuff left in current.
+            // Compute what we have left as it's own sentence
+            if (current.Length >= 0)
+                allPossibleSentences.Add(computeSentence(current, ' '));
 
             return allPossibleSentences;
         }
 
-
         // Input: sentence string without puncutuation or whitespace, char of the punctuation to put at the end
-        // Output: list of all valid sentences with whitespace and their scores
+        // Output: sorted list of all valid sentences with whitespace and their scores
         //
         // ** This is a memory function of dynamic programming **
         //    It uses a global variable (a hashmap) _savedSentences to store the lists of valid
         //    sentences we've already calculated <key = sentence, value = list of valid sentences>
-        static Dictionary<string, List<WeightedString>> _savedSentences = new Dictionary<string, List<WeightedString>>();
-        
+        static Dictionary<string, List<WeightedString>> _savedSentences;
+
+        // Wrapper function for computeSentenceDynamic() to avoid repeated code
         static List<WeightedString> computeSentence(string sentence, char punctuation)
+        {
+            // Reset the memory from the dynamic programming function
+            _savedSentences = new Dictionary<string, List<WeightedString>>();
+
+            // Compute the senctence, sort the possibilities by score
+            List<WeightedString> currentSentence = computeSentenceDynamic(sentence, punctuation);
+            currentSentence = currentSentence.OrderBy(x => x.score).ToList();
+            return currentSentence;
+        }
+
+        static List<WeightedString> computeSentenceDynamic(string sentence, char punctuation)
         {
             // List of all valid sentences for a given sentence
             List<WeightedString> result = new List<WeightedString>();
@@ -131,7 +138,7 @@ namespace DynamicProject
                     // DYNAMIC PART - if we have, take the results from the hashmap _saveSentences
                     // If we haven't, run it as it's own sentence recursivly through this function
                     if (!_savedSentences.ContainsKey(next))
-                        _savedSentences[next] = computeSentence(next, punctuation);
+                        _savedSentences[next] = computeSentenceDynamic(next, punctuation);
                     else
                         Console.WriteLine(" Already calculated term '" + next + "'. Skipping.");
 
