@@ -11,6 +11,16 @@ namespace DynamicProject
         const int MAX_WORD_SIZE = 16;
         static Dictionary<string, int> dictionary;
 
+        // Datastruture to define a sentence/document
+        // and it's score (where less = more likely)
+        struct WeightedString
+        {
+            public string value;
+            public int score;
+
+            public WeightedString(string v, int s) { value = v; score = s; }
+        }
+
         static void Main(string[] args)
         {
             dictionary = DictionaryParser.parseDictionary1("dictionary.txt");
@@ -24,65 +34,82 @@ namespace DynamicProject
             Console.Write("Enter your input: ");
             input = Console.ReadLine().ToLower();
 
-            SortedDictionary<int, string> all = computeSentence(input);
+            List<SortedDictionary<int, string>> all = computeDocument(input);
 
-            foreach(var str in all)
+            for(int i = 0; i < all.Count; i++)
             {
-                Console.WriteLine(str.Key + " " + str.Value);
+                Console.WriteLine("All possibilities for sentence " + i + ": ");
+
+                foreach(var sentence in all[i])
+                {
+                    Console.WriteLine("     Score:" + sentence.Key + " Sentence: " + sentence.Value);
+                }
+                Console.WriteLine();
             }
 
             // keep the console open at the end so it doesn't immediatly close
             Console.ReadLine();
         }
 
-        // Input: Text without whitespace, may contain splitting puncutation (.?!:;,)
-        // Output: 1. Top 5 most likely documents with their score
-        //         2. A list (of each sentence) of lists (all valid possibilities for that sentence) 
-        // ** Note: I am changing the spec from "all possible original documents" to this output, 
-        //          because the output got super big with larger documents
-        static SortedDictionary<int, string> addWhiteSpace(string input)
+        // Input: Text without whitespace, may contain sentence splitting puncutation (.?!:;,)
+        // Output: 1. Top 5 most likely documents with their score in a BST
+        //         2. A list (of each sentence) of sorted lists (all valid possibilities for that sentence) 
+        //
+        // **Note: I am changing the spec from "all possible original documents" to this output, 
+        //         because the output got super big with larger documents
+        static List<SortedDictionary<int, string>> computeDocument(string input)
         {
-            string current = "";
-            SortedDictionary<int, string> result = new SortedDictionary<int, string>();
+            SortedSet<WeightedString> mostLikelyDocuments = new SortedSet<WeightedString>();
+            List<List<WeightedString>> allPossibleSentences = new List<List<WeightedString>>();
 
-            for(int i = 0; i < input.Length; i++)
+            string current = "";
+
+            for (int i = 0; i < input.Length; i++)
             {
                 // If we find punctuation that splits words, compute it as a sentence.
                 if (isPunctuation(input[i]))
                 {
-                    SortedDictionary<int, string> currentSentence = computeSentence(current);
+                    // Reset the memory from the dynamic programming function, compute the sentence
+                    _savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
+                    SortedDictionary<int, string> currentSentence = computeSentence(current, input[i]);
+                    allPossibleSentences.Add(currentSentence);
 
                     // Because we want to come up with each possible essay, add
                     // each possibility for this sentance to every other possiblility we already have in the result
-                    foreach(var essay in result)
+                    foreach (var document in mostLikelyDocuments)
                     {
-
+                        //  document.
                     }
+
+                    current = "";
+                }
+                else
+                {
+                    current += input[i];
                 }
             }
 
-            return result;
+            return allPossibleSentences;
         }
 
 
-        // Input: sentence string without puncutuation or whitespace
-        // Output: A binary search tree with all valid sentences with whitespace, 
-        //         ordered by their score (smaller score = more likelyhood of being the actual sentence)
+        // Input: sentence string without puncutuation or whitespace, char of the punctuation to put at the end
+        // Output: list of all valid sentences with whitespace and their scores
         //
         // ** This is a memory function of dynamic programming **
         //    It uses a global variable (a hashmap) _savedSentences to store the lists of valid
         //    sentences we've already calculated <key = sentence, value = list of valid sentences>
-        static Dictionary<string, SortedDictionary<int, string>> _savedSentences = new Dictionary<string, SortedDictionary<int, string>>();
-
-        static SortedDictionary<int, string> computeSentence(string sentence)
+        static Dictionary<string, List<WeightedString>> _savedSentences = new Dictionary<string, List<WeightedString>>();
+        
+        static List<WeightedString> computeSentence(string sentence, char punctuation)
         {
-            // BST of all valid sentences for a given sentence, ordered by score
-            SortedDictionary<int, string> result = new SortedDictionary<int, string>();
+            // List of all valid sentences for a given sentence
+            List<WeightedString> result = new List<WeightedString>();
 
-            // Base case - sentence length is 0. Return a space.
+            // Base case - sentence length is 0. Return a backspace and the punctuation.
             if (sentence.Length == 0)
             {
-                result.Add(0, " ");
+                result.Add(new WeightedString("\b" + punctuation, 0));
                 return result;
             }
 
@@ -104,13 +131,15 @@ namespace DynamicProject
                     // DYNAMIC PART - if we have, take the results from the hashmap _saveSentences
                     // If we haven't, run it as it's own sentence recursivly through this function
                     if (!_savedSentences.ContainsKey(next))
-                        _savedSentences[next] = computeSentence(next);
+                        _savedSentences[next] = computeSentence(next, punctuation);
                     else
                         Console.WriteLine(" Already calculated term '" + next + "'. Skipping.");
 
                     // Add all valid results to the list
+
+                    // TODO: Allow senteces with the same score in
                     foreach (var possibility in _savedSentences[next])
-                        result.Add(possibility.Key + dictionary[strBuilder], strBuilder + " " + possibility.Value);
+                        result.Add(new WeightedString(strBuilder + " " + possibility.value, possibility.score + dictionary[strBuilder]));
                 }
                 Console.WriteLine();
             }
