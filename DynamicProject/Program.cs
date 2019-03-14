@@ -8,12 +8,12 @@ namespace DynamicProject
 {
     class Program
     {
-        const int MAX_WORD_SIZE = 16;
-        static Dictionary<string, int> dictionary;
+        public const int MAX_WORD_SIZE = 16;
+        public static Dictionary<string, int> dictionary;
 
         // Datastruture to define a sentence/document
         // and it's score (where less = more likely)
-        struct WeightedString
+        public struct WeightedString
         {
             public string value;
             public int score;
@@ -73,7 +73,7 @@ namespace DynamicProject
                 // If we find punctuation that splits words, compute it as a sentence.
                 if (isPunctuation(input[i]))
                 {
-                    allPossibleSentences.Add(computeSentence(current, input[i]));
+                    allPossibleSentences.Add(DynamicAlgorithm.computeSentence(current, input[i]));
                     current = "";
                 }
                 else
@@ -83,77 +83,10 @@ namespace DynamicProject
             // If the document doesn't end with punctuation, we'll still have stuff left in current.
             // Compute what we have left as it's own sentence
             if (current.Length >= 0)
-                allPossibleSentences.Add(computeSentence(current, ' '));
+                allPossibleSentences.Add(DynamicAlgorithm.computeSentence(current, ' '));
 
             return allPossibleSentences;
         }
-
-        // Input: sentence string without puncutuation or whitespace, char of the punctuation to put at the end
-        // Output: sorted list of all valid sentences with whitespace and their scores
-        //
-        // ** This is a memory function of dynamic programming **
-        //    It uses a global variable (a hashmap) _savedSentences to store the lists of valid
-        //    sentences we've already calculated <key = sentence, value = list of valid sentences>
-        static Dictionary<string, List<WeightedString>> _savedSentences;
-
-        // Wrapper function for computeSentenceDynamic() to avoid repeated code
-        static List<WeightedString> computeSentence(string sentence, char punctuation)
-        {
-            // Reset the memory from the dynamic programming function
-            _savedSentences = new Dictionary<string, List<WeightedString>>();
-
-            // Compute the senctence, sort the possibilities by score
-            List<WeightedString> currentSentence = computeSentenceDynamic(sentence, punctuation);
-            currentSentence = currentSentence.OrderBy(x => x.score).ToList();
-            return currentSentence;
-        }
-
-        static List<WeightedString> computeSentenceDynamic(string sentence, char punctuation)
-        {
-            // List of all valid sentences for a given sentence
-            List<WeightedString> result = new List<WeightedString>();
-
-            // Base case - sentence length is 0. Return a backspace and the punctuation.
-            if (sentence.Length == 0)
-            {
-                result.Add(new WeightedString("\b" + punctuation, 0));
-                return result;
-            }
-
-            string strBuilder = "";
- 
-            for(int i = 0; i < Math.Min(MAX_WORD_SIZE, sentence.Length); i++)
-            {
-                strBuilder += sentence[i];
-                Console.Write(" Checking " + strBuilder + " in '" + sentence + "'");
-
-                // Check if the current word is valid. If so, add it to the result dictionary
-                if(dictionary.ContainsKey(strBuilder))
-                {
-                    Console.Write("....... Match!");
-
-                    string next = sentence.Substring(strBuilder.Length);
-
-                    // Now, take the rest of the string, and see if we've already caluclated it before.
-                    // DYNAMIC PART - if we have, take the results from the hashmap _saveSentences
-                    // If we haven't, run it as it's own sentence recursivly through this function
-                    if (!_savedSentences.ContainsKey(next))
-                        _savedSentences[next] = computeSentenceDynamic(next, punctuation);
-                    else
-                        Console.WriteLine(" Already calculated term '" + next + "'. Skipping.");
-
-                    // Add all valid results to the list
-
-                    // TODO: Allow senteces with the same score in
-                    foreach (var possibility in _savedSentences[next])
-                        result.Add(new WeightedString(strBuilder + " " + possibility.value, possibility.score + dictionary[strBuilder]));
-                }
-                Console.WriteLine();
-            }
-
-            return result;
-        }
-
 
         static bool isPunctuation(char c)
         {
