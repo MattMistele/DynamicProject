@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DynamicProject
 {
+    // Class help me save the console output to a file
     public static class Logger
     {
         public static StringBuilder LogString = new StringBuilder();

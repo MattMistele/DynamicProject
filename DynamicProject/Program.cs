@@ -40,8 +40,8 @@ namespace DynamicProject
             // Put them together to get the top 50 most likely origional documents
             List<WeightedString> topDocuments = aggregateTopDocuments(allSentences);
 
+            // Print the top 100 valid possibilities for each sentence
             Logger.Out();
-
             for (int i = 0; i < allSentences.Count; i++)
             {
                 Logger.Out("Top 100 possibilities for sentence #" + i + ": ");
@@ -52,9 +52,9 @@ namespace DynamicProject
                 }
                 Logger.Out();
             }
-
             Logger.Out(); Logger.Out();
 
+            // Print the top 50 valid documents
             for (int i = 0; i < topDocuments.Count; i++)
             {
                 Logger.Out("Top document #" + i + " with score " + topDocuments[i].score + ": ");
