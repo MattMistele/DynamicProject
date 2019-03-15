@@ -28,13 +28,11 @@ namespace DynamicProject
             dictionary = DictionaryParser.parseDictionary1("dictionary.txt");
             string input;
 
-            //// Read the input file
-            //Console.Write("Enter the name of the input file. Make sure it's in the current directory: ");
-            //input = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, Console.ReadLine()));
-            //Console.WriteLine("Your input is: \n" + input + "\n");
+            // Read the input file
+            Console.Write("Enter the name of the input file. Make sure it's in the current directory: ");
+            input = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, Console.ReadLine()));
+            Console.WriteLine("Your input is: \n" + input + "\n");
 
-            Console.Write("Enter your input: ");
-            input = Console.ReadLine().ToLower();
 
             List<List<WeightedString>> allSentences = computeDocument(input);
             List<WeightedString> topDocuments = aggregateTopDocuments(allSentences);
