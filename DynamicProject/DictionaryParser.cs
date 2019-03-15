@@ -16,7 +16,7 @@ namespace DynamicProject
             string[] lines = File.ReadAllLines(Path.Combine(Environment.CurrentDirectory, fileName));
             int currentScore = 1;
 
-            Console.Write("Parsing dictionary.txt into hashmap... ");
+            Logger.Out("Parsing dictionary.txt into hashmap... ");
 
             // start parsing at the third line, bc the first two lines are just comments
             for(int i = 2; i < lines.Length; i++)
@@ -42,8 +42,8 @@ namespace DynamicProject
             words.Add("i", 1);
             words.Add("a", 1);
 
-            Console.WriteLine("Done.");
-            Console.WriteLine();
+            Logger.Out("Done.");
+            Logger.Out();
 
             return words;
         }

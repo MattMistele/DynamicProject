@@ -29,35 +29,41 @@ namespace DynamicProject
             string input;
 
             // Read the input file
-            Console.Write("Enter the name of the input file. Make sure it's in the current directory: ");
+            Logger.Out("Enter the name of the input file. Make sure it's in the current directory: ");
             input = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, Console.ReadLine()));
-            Console.WriteLine("Your input is: \n" + input + "\n");
+            Logger.Out("Your input is: \n" + input + "\n");
 
 
+            // Get the top 100 valid sentences for each sentence in the document
             List<List<WeightedString>> allSentences = computeDocument(input);
+
+            // Put them together to get the top 50 most likely origional documents
             List<WeightedString> topDocuments = aggregateTopDocuments(allSentences);
 
-            Console.WriteLine(); Console.WriteLine();
-
+            Logger.Out();
 
             for (int i = 0; i < allSentences.Count; i++)
             {
-                Console.WriteLine("Top 100 possibilities for sentence " + i + ": ");
+                Logger.Out("Top 100 possibilities for sentence #" + i + ": ");
 
                 foreach(WeightedString sentence in allSentences[i])
                 {
-                    Console.WriteLine("     Score:" + sentence.score + " Sentence: " + sentence.value);
+                    Logger.Out("     Score:" + sentence.score + " Sentence: " + sentence.value);
                 }
-                Console.WriteLine();
+                Logger.Out();
             }
 
-            Console.WriteLine(); Console.WriteLine();
+            Logger.Out(); Logger.Out();
 
             for (int i = 0; i < topDocuments.Count; i++)
             {
-                Console.WriteLine("Top document " + i + ": ");
-                Console.WriteLine("     Score:" + topDocuments[i].score + " Sentence: " + topDocuments[i].value);
+                Logger.Out("Top document #" + i + " with score " + topDocuments[i].score + ": ");
+                Logger.Out("    " + topDocuments[i].value + "\n");
             }
+
+            // Save to file
+            File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "output.txt"), Logger.LogString.ToString());
+            Console.WriteLine("Results saved to output.txt");
 
             // keep the console open at the end so it doesn't immediatly close
             Console.ReadLine();
