@@ -35,10 +35,7 @@ namespace DynamicProject
                 }
             }
 
-            // Edge case - 1 letter words
-            words.Add("I", 1);
-            words.Add("A", 1);
-            // TODO: change - only do upper/lower case?
+            // Edge case - 1 letter words.
             words.Add("i", 1);
             words.Add("a", 1);
 
