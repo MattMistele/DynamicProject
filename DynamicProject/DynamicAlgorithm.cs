@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using static DynamicProject.Program;
 
@@ -22,6 +21,7 @@ namespace DynamicProject
             currentSentence = currentSentence.OrderBy(x => x.score).ToList();
             if (currentSentence.Count > TOP_SENTENCES_TO_KEEP)
                 currentSentence.RemoveRange(TOP_SENTENCES_TO_KEEP, currentSentence.Count - TOP_SENTENCES_TO_KEEP);
+
             return currentSentence;
         }
 
@@ -36,42 +36,35 @@ namespace DynamicProject
             // List of all valid sentences for a given sentence
             List<WeightedString> result = new List<WeightedString>();
 
-            // Base case - sentence length is 0. Return a backspace and the punctuation.
+            // BASE CASE - sentence length is 0. Return a backspace and the punctuation.
             if (sentence.Length == 0)
             {
                 result.Add(new WeightedString("\b" + punctuation + " ", 0));
                 return result;
             }
 
+            // RECURSIVE CASE
             string strBuilder = "";
 
             for (int i = 0; i < Math.Min(MAX_WORD_SIZE, sentence.Length); i++)
             {
                 strBuilder += sentence[i];
-                Console.Write(" Checking " + strBuilder + " in '" + sentence + "'");
 
                 // Check if the current word is valid. If so, add it to the result dictionary
-                if (dictionary.ContainsKey(strBuilder))
+                if (dictionary.ContainsKey(strBuilder.ToLower()))
                 {
-                    Console.Write("....... Match!");
-
-                    string next = sentence.Substring(strBuilder.Length);
-
                     // Now, take the rest of the string, and see if we've already caluclated it before.
                     // DYNAMIC PART - if we have, take the results from the hashmap _saveSentences
                     // If we haven't, run it as it's own sentence recursivly through this function
+                    string next = sentence.Substring(strBuilder.Length);
+
                     if (!_savedSentences.ContainsKey(next))
                         _savedSentences[next] = computeSentenceDynamic(next, punctuation);
-                    else
-                        Console.WriteLine(" Already calculated term '" + next + "'. Skipping.");
 
                     // Add all valid results to the list
-
-                    // TODO: Allow senteces with the same score in
                     foreach (var possibility in _savedSentences[next])
-                        result.Add(new WeightedString(strBuilder + " " + possibility.value, possibility.score + dictionary[strBuilder]));
+                        result.Add(new WeightedString(strBuilder + " " + possibility.value, possibility.score + dictionary[strBuilder.ToLower()]));
                 }
-                Console.WriteLine();
             }
 
             return result;
