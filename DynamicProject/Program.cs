@@ -86,6 +86,8 @@ namespace DynamicProject
                 WeightedString currentDocument = new WeightedString("", 0);
                 foreach (List<WeightedString> sentencePossibilities in allSentences)
                 {
+                    if (sentencePossibilities.Count == 0) continue;
+
                     // If a sentence only has say 2 possibilities, use the last possibility for computing the rest of the 3 documents.
                     int sentenceToPull = sentencePossibilities.Count - 1 < documentIndex ? sentencePossibilities.Count - 1 : documentIndex;
 
