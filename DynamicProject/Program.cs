@@ -125,7 +125,7 @@ namespace DynamicProject
             return allPossibleSentences;
         }
 
-        static bool isPunctuation(char c)
+        public static bool isPunctuation(char c)
         {
             return c.Equals('!') || c.Equals('?') || c.Equals('.') || c.Equals(':') || c.Equals(';') || c.Equals(',');
         }

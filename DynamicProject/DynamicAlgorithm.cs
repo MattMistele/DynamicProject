@@ -36,10 +36,10 @@ namespace DynamicProject
             // List of all valid sentences for a given sentence
             List<WeightedString> result = new List<WeightedString>();
 
-            // BASE CASE - sentence length is 0. Return a backspace and the punctuation.
+            // BASE CASE - sentence length is 0. Return the punctuation.
             if (sentence.Length == 0)
             {
-                result.Add(new WeightedString("\b" + punctuation + " ", 0));
+                result.Add(new WeightedString(punctuation + " ", 0));
                 return result;
             }
 
@@ -63,7 +63,10 @@ namespace DynamicProject
 
                     // Add all valid results to the list
                     foreach (var possibility in _savedSentences[next])
-                        result.Add(new WeightedString(strBuilder + " " + possibility.value, possibility.score + dictionary[strBuilder.ToLower()]));
+                    {
+                        string toAdd = isPunctuation(possibility.value[0]) ? strBuilder : strBuilder + " ";
+                        result.Add(new WeightedString(toAdd + possibility.value, possibility.score + dictionary[strBuilder.ToLower()]));
+                    }
                 }
             }
 
