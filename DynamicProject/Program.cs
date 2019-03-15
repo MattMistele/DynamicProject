@@ -9,6 +9,8 @@ namespace DynamicProject
     class Program
     {
         public const int MAX_WORD_SIZE = 16;
+        public const int TOP_SENTENCES_TO_KEEP = 100;
+        public const int TOP_DOCUMENTS_TO_KEEP = 50;
         public static Dictionary<string, int> dictionary;
 
         // Datastruture to define a sentence/document
@@ -35,10 +37,14 @@ namespace DynamicProject
             input = Console.ReadLine().ToLower();
 
             List<List<WeightedString>> allSentences = computeDocument(input);
+            List<WeightedString> topDocuments = aggregateTopDocuments(allSentences);
 
-            for(int i = 0; i < allSentences.Count; i++)
+            Console.WriteLine(); Console.WriteLine();
+
+
+            for (int i = 0; i < allSentences.Count; i++)
             {
-                Console.WriteLine("All possibilities for sentence " + i + ": ");
+                Console.WriteLine("Top 100 possibilities for sentence " + i + ": ");
 
                 foreach(WeightedString sentence in allSentences[i])
                 {
@@ -47,18 +53,45 @@ namespace DynamicProject
                 Console.WriteLine();
             }
 
+            Console.WriteLine(); Console.WriteLine();
+
+            for (int i = 0; i < topDocuments.Count; i++)
+            {
+                Console.WriteLine("Top document " + i + ": ");
+                Console.WriteLine("     Score:" + topDocuments[i].score + " Sentence: " + topDocuments[i].value);
+            }
+
             // keep the console open at the end so it doesn't immediatly close
             Console.ReadLine();
         }
 
         // Input: list (of each sentence in the document) of sorted lists (all valid possibilities for each sentence)
-        // Output: The top 5 most likely origional documents
+        // Output: The top 50 most likely origional documents with their score
         //
         // **Note: I am changing the spec from "all possible original documents" to this output, 
         //         because the output got super big with larger documents
-        static List<string> aggregateTopDocuments(List<List<WeightedString>> allSentences)
+        //
+        // **Note: In order to make the documents different enough from each other, 
+        //         take the #1 most likely sentences for document #1, the #2 most likely sentences for document #2, etc..
+        static List<WeightedString> aggregateTopDocuments(List<List<WeightedString>> allSentences)
         {
+            List<WeightedString> result = new List<WeightedString>();
 
+            for (int documentIndex = 0; documentIndex < TOP_DOCUMENTS_TO_KEEP; documentIndex++)
+            {
+                WeightedString currentDocument = new WeightedString("", 0);
+                foreach (List<WeightedString> sentencePossibilities in allSentences)
+                {
+                    // If a sentence only has say 2 possibilities, use the last possibility for computing the rest of the 3 documents.
+                    int sentenceToPull = sentencePossibilities.Count - 1 < documentIndex ? sentencePossibilities.Count - 1 : documentIndex;
+
+                    currentDocument.value += sentencePossibilities[sentenceToPull].value;
+                    currentDocument.score += sentencePossibilities[sentenceToPull].score;
+                }
+                result.Add(currentDocument);
+            }
+
+            return result;
         }
 
         // Input: Text without whitespace, may contain sentence splitting puncutation (.?!:;,)

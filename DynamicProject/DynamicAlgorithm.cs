@@ -17,9 +17,11 @@ namespace DynamicProject
             // Reset the memory from the dynamic programming function
             _savedSentences = new Dictionary<string, List<WeightedString>>();
 
-            // Compute the senctence, sort the possibilities by score
+            // Compute the senctence, sort the possibilities by score, only keep the top 100 sentences
             List<WeightedString> currentSentence = computeSentenceDynamic(sentence, punctuation);
             currentSentence = currentSentence.OrderBy(x => x.score).ToList();
+            if (currentSentence.Count > TOP_SENTENCES_TO_KEEP)
+                currentSentence.RemoveRange(TOP_SENTENCES_TO_KEEP, currentSentence.Count - TOP_SENTENCES_TO_KEEP);
             return currentSentence;
         }
 
@@ -37,7 +39,7 @@ namespace DynamicProject
             // Base case - sentence length is 0. Return a backspace and the punctuation.
             if (sentence.Length == 0)
             {
-                result.Add(new WeightedString("\b" + punctuation, 0));
+                result.Add(new WeightedString("\b" + punctuation + " ", 0));
                 return result;
             }
 
